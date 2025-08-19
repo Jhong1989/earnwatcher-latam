@@ -19,8 +19,10 @@ HEADERS       = {"X-MBX-APIKEY": API_KEY}
 
 # ---------- Util ----------
 def to_float(x):
-    try: return float(x)
-    except Exception: return None
+    try:
+        return float(x)
+    except Exception:
+        return None
 
 # ---------- Binance (UN SOLO HOST) ----------
 def signed_get(path: str, params: dict) -> dict:
@@ -103,8 +105,10 @@ def group_by_asset(items):
 
 def render_site(items, by_asset, note=None):
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)),
-                      autoescape=select_autoescape(["html","xml"]))
+    env = Environment(
+        loader=FileSystemLoader(str(TEMPLATES_DIR)),
+        autoescape=select_autoescape(["html", "xml"])
+    )
     ctx = {
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "ref_link": f"https://accounts.binance.com/register?ref={REF_CODE}" if REF_CODE else None,
@@ -125,14 +129,21 @@ def render_site(items, by_asset, note=None):
     # sitemap
     if SITE_BASE_URL:
         urls = [f"{SITE_BASE_URL}/", *[f"{SITE_BASE_URL}/{a}.html" for a in by_asset.keys()]]
-        sm = ["<?xml version='1.0' encoding='UTF-8'?>",
-              "<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>"]
-        for u in urls: sm.append(f"<url><loc>{u}</loc></url>")
+        sm = [
+            "<?xml version='1.0' encoding='UTF-8'?>",
+            "<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>",
+        ]
+        for u in urls:
+            sm.append(f"<url><loc>{u}</loc></url>")
         sm.append("</urlset>")
         (OUT_DIR / "sitemap.xml").write_text("\n".join(sm), encoding="utf-8")
 
 def write_robots():
-    txt = f"User-agent: *\nAllow: /\n\nSitemap: {SITE_BASE_URL}/sitemap.xml\n" if SITE_BASE_URL else "User-agent: *\nAllow: /\n"
+    txt = (
+        f"User-agent: *\nAllow: /\n\nSitemap: {SITE_BASE_URL}/sitemap.xml\n"
+        if SITE_BASE_URL else
+        "User-agent: *\nAllow: /\n"
+    )
     (OUT_DIR / "robots.txt").write_text(txt, encoding="utf-8")
 
 def save_cache(items):
@@ -172,8 +183,6 @@ def load_cache():
 
     return None, None
 
-
-
 def main():
     note = None
     try:
@@ -184,15 +193,14 @@ def main():
             save_cache(items)
         else:
             note = "Sin ítems devueltos por la API en este ciclo."
-     except Exception as e:
+    except Exception as e:
         print("WARN:", repr(e))
         cached, src = load_cache()
         if cached:
-        items = cached
-        # si viene del branch gh-pages (raw), NO mostrar aviso
-        note = None if src == "raw" else "Mostrando datos en caché por un problema temporal con la API."
-       else:      
-
+            items = cached
+            # si viene del branch gh-pages (raw), NO mostrar aviso
+            note = None if src == "raw" else "Mostrando datos en caché por un problema temporal con la API."
+        else:
             # sin datos ni caché: página mínima
             OUT_DIR.mkdir(parents=True, exist_ok=True)
             (OUT_DIR / "index.html").write_text(
