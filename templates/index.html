@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Mejores rendimientos hoy (Binance Simple Earn)</h1>
+  {% if note %}<div class="note">{{ note }}</div>{% endif %}
+  <p>Ordenado por APR/APY. Click en un activo para ver detalles y plazos.</p>
+  <table>
+    <thead>
+      <tr><th>Activo</th><th>Mejor APR/APY</th><th>Tipo</th><th>Plazo</th><th>Mínimo</th><th>Estado</th></tr>
+    </thead>
+    <tbody>
+      {% for asset, lst in by_asset.items() %}
+        {% set top = lst[0] %}
+        <tr>
+          <td><a href="{{ asset }}.html">{{ asset }}</a></td>
+          <td>{{ (top.apr * 100) | round(2) }}%</td>
+          <td>{{ top.type }}</td>
+          <td>{{ top.duration_days if top.duration_days else 'Flexible' }}</td>
+          <td>{{ top.min_purchase }}</td>
+          <td><span class="badge">{{ 'Disponible' if top.can_purchase else 'Agotado' }}</span></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
