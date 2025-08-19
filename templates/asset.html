@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>{{ asset }}</h1>
+  {% if note %}<div class="note">{{ note }}</div>{% endif %}
+  <table>
+    <thead>
+      <tr><th>Tipo</th><th>APR/APY</th><th>Plazo (d)</th><th>Mínimo</th><th>Estado</th></tr>
+    </thead>
+    <tbody>
+      {% for it in items %}
+        <tr>
+          <td>{{ it.type }}</td>
+          <td>{{ (it.apr * 100) | round(2) }}%</td>
+          <td>{{ it.duration_days if it.duration_days else 'Flexible' }}</td>
+          <td>{{ it.min_purchase }}</td>
+          <td><span class="badge">{{ 'Disponible' if it.can_purchase else 'Agotado' }}</span></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted"><a href="./">← Volver</a></p>
+{% endblock %}
