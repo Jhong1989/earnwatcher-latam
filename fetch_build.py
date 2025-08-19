@@ -1,3 +1,4 @@
+# fetch_build.py — versión simple (un solo host) + parche de caché "raw"
 import os, time, hmac, hashlib, pathlib, json
 from urllib.parse import urlencode
 import requests
@@ -28,6 +29,7 @@ def to_float(x):
 def signed_get(path: str, params: dict) -> dict:
     if not API_KEY or not API_SECRET:
         raise RuntimeError("Faltan BINANCE_API_KEY/SECRET en Secrets.")
+
     # sincroniza tiempo (evita -1021)
     try:
         t = requests.get(f"{BINANCE_BASE}/api/v3/time", timeout=10).json()["serverTime"]
@@ -152,8 +154,15 @@ def save_cache(items):
         json.dump(items, f)
 
 def load_cache():
-    # 0) lee directo del branch gh-pages (raw) → fuente "raw"
-    slug = os.getenv("GITHUB_REPOSITORY", "")  # p.ej. "jhong1989/earnwatcher-latam" en Actions
+    """
+    Devuelve (items, source):
+      source = "raw"   -> leído directo del branch gh-pages (raw.githubusercontent.com)
+      source = "local" -> leído de site/data.json del build anterior
+      source = "site"  -> leído de la URL pública del sitio (puede tardar por CDN)
+      source = None    -> no hay datos
+    """
+    # 0) lee directo del branch gh-pages (raw) → fuente "raw" (instantáneo tras subir data.json)
+    slug = os.getenv("GITHUB_REPOSITORY", "")  # p.ej. "usuario/repo" en Actions
     if slug:
         try:
             owner, repo = slug.split("/", 1)
@@ -172,17 +181,16 @@ def load_cache():
         except Exception:
             pass
 
-    # 2) respaldo: desde el sitio público → fuente "site"
+    # 2) como respaldo, desde el sitio público → fuente "site"
     try:
         if SITE_BASE_URL:
             r = requests.get(f"{SITE_BASE_URL}/data.json", timeout=10)
-            if r.status_code == 200:
+            if r.status_code == 200 and r.text.strip():
                 return r.json(), "site"
     except Exception:
         pass
 
     return None, None
-
 
 def main():
     note = None
@@ -216,8 +224,6 @@ def main():
     write_robots()
     save_cache(items)
     print(f"OK. Publicado con {len(items)} items. Nota: {note or '—'}")
-
-
 
 if __name__ == "__main__":
     main()
