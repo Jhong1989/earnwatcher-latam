@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://Jhong1989.github.io/earnwatcher-latam/sitemap.xml
