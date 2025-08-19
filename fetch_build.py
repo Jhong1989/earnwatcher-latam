@@ -184,7 +184,7 @@ def main():
             save_cache(items)
         else:
             note = "Sin ítems devueltos por la API en este ciclo."
-    except Exception as e:
+     except Exception as e:
     print("WARN:", repr(e))
     cached, src = load_cache()
     if cached:
