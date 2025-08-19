@@ -1,0 +1,42 @@
+name: Build & Deploy (hourly)
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 * * * *"  # cada hora
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install requests jinja2
+
+      - name: Build static site
+        env:
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+          BINANCE_REF_CODE: ${{ secrets.BINANCE_REF_CODE }}
+          SITE_BASE_URL: ${{ secrets.SITE_BASE_URL }}
+          BINANCE_BASE: ${{ secrets.BINANCE_BASE }}
+        run: python fetch_build.py
+
+      - name: Copy robots.txt into site
+        run: |
+          mkdir -p site
+          if [ -f robots.txt ]; then cp robots.txt site/; fi
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: site
