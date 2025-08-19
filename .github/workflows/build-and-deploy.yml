@@ -10,24 +10,10 @@ permissions:
 
 jobs:
   build:
-    runs-on: self-hosted
-    defaults:
-      run:
-        shell: pwsh
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # Usa el Python que ya tienes instalado en tu PC
-      - name: Check Python
-        run: |
-          python --version
-          pip --version
-
-      - name: Install deps
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install requests jinja2
+      - run: pip install requests jinja2
 
       - name: Build static site
         env:
@@ -40,8 +26,8 @@ jobs:
 
       - name: Copy robots.txt into site
         run: |
-          if (!(Test-Path site)) { New-Item -ItemType Directory -Path site | Out-Null }
-          if (Test-Path robots.txt) { Copy-Item robots.txt site/ }
+          mkdir -p site
+          if [ -f robots.txt ]; then cp robots.txt site/; fi
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
