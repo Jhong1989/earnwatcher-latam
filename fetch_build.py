@@ -141,8 +141,7 @@ def save_cache(items):
         json.dump(items, f)
 
 def load_cache():
-    # 0) Lee directamente del repo (gh-pages) vía raw.githubusercontent.com
-    #    Esto es instantáneo tras el push y evita el retardo de GitHub Pages.
+    # 0) lee directo del branch gh-pages (raw) → fuente "raw"
     slug = os.getenv("GITHUB_REPOSITORY", "")  # p.ej. "jhong1989/earnwatcher-latam" en Actions
     if slug:
         try:
@@ -150,28 +149,29 @@ def load_cache():
             raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/gh-pages/data.json"
             r = requests.get(raw_url, timeout=12)
             if r.status_code == 200 and r.text.strip():
-                return r.json()
+                return r.json(), "raw"
         except Exception:
             pass
 
-    # 1) caché local del build anterior (si existiera)
+    # 1) caché local del build anterior → fuente "local"
     if CACHE_PATH.exists():
         try:
             with open(CACHE_PATH, "r", encoding="utf-8") as f:
-                return json.load(f)
+                return json.load(f), "local"
         except Exception:
             pass
 
-    # 2) como respaldo, intenta desde el sitio público (puede tener retardo de CDN)
+    # 2) como respaldo, desde el sitio público → fuente "site"
     try:
         if SITE_BASE_URL:
             r = requests.get(f"{SITE_BASE_URL}/data.json", timeout=10)
             if r.status_code == 200:
-                return r.json()
+                return r.json(), "site"
     except Exception:
         pass
 
-    return None
+    return None, None
+
 
 
 def main():
