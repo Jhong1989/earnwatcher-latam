@@ -172,7 +172,7 @@ def load_cache():
         except Exception:
             pass
 
-    # 2) como respaldo, desde el sitio público → fuente "site"
+    # 2) respaldo: desde el sitio público → fuente "site"
     try:
         if SITE_BASE_URL:
             r = requests.get(f"{SITE_BASE_URL}/data.json", timeout=10)
@@ -182,6 +182,7 @@ def load_cache():
         pass
 
     return None, None
+
 
 def main():
     note = None
@@ -198,7 +199,7 @@ def main():
         cached, src = load_cache()
         if cached:
             items = cached
-            # si viene del branch gh-pages (raw), NO mostrar aviso
+            # Si viene del branch gh-pages (raw), NO mostrar aviso
             note = None if src == "raw" else "Mostrando datos en caché por un problema temporal con la API."
         else:
             # sin datos ni caché: página mínima
@@ -213,9 +214,9 @@ def main():
     by_asset = group_by_asset(items)
     render_site(items, by_asset, note=note)
     write_robots()
-    # guarda lo que mostramos
     save_cache(items)
     print(f"OK. Publicado con {len(items)} items. Nota: {note or '—'}")
+
 
 
 if __name__ == "__main__":
