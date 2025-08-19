@@ -185,12 +185,15 @@ def main():
         else:
             note = "Sin ítems devueltos por la API en este ciclo."
     except Exception as e:
-        print("WARN:", repr(e))
-        cached = load_cache()
-        if cached:
-            items = cached
-            note = "Mostrando datos en caché por un problema temporal con la API."
-        else:
+    print("WARN:", repr(e))
+    cached, src = load_cache()
+    if cached:
+        items = cached
+        # si viene del branch gh-pages (raw), NO mostrar aviso
+        note = None if src == "raw" else "Mostrando datos en caché por un problema temporal con la API."
+    else:
+        ...
+
             # sin datos ni caché: página mínima
             OUT_DIR.mkdir(parents=True, exist_ok=True)
             (OUT_DIR / "index.html").write_text(
